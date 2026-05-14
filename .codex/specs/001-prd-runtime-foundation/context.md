@@ -2,10 +2,10 @@
 
 ## Status
 
-Last completed batch: 3
-Remaining batches: Batch 4 - Packaging smoke and final hardening
-Next exact step: T-007: Add final edge-case tests and contract assertions
-Next command: /skill:spec-execute 001-prd-runtime-foundation batch 4
+Last completed batch: 4
+Remaining batches: none
+Next exact step: Run spec verification
+Next command: /skill:spec-verify 001-prd-runtime-foundation
 Resume from (file:line): .codex/specs/001-prd-runtime-foundation/harness/progress.md:4
 
 ## Key Discoveries
@@ -23,6 +23,9 @@ Resume from (file:line): .codex/specs/001-prd-runtime-foundation/harness/progres
 
 - [Batch 3] CLI `run` opens the configured SQLite database before dispatch and maps unknown tasks to exit 4, DB/path errors to exit 3, handler failures to exit 1, and completions to exit 0.
 - [Batch 3] JSON output is generated with `dataclasses.asdict(TaskResult)`, preserving dataclass field order for the approved schema.
+
+- [Batch 4] Editable install succeeded with hatchling and exposed `agent-browser`; both module and console help entrypoints work after installation. This WSL image lacks a `python` alias, so the documented `python -m agent_browser --help` smoke was run with a temporary PATH shim pointing `python` to `python3`.
+- [Batch 4] `run_task` redirects Python-level handler `sys.stdout`/`print` output during invocation so normal handler prints do not pollute CLI JSON stdout; file-descriptor/subprocess stdout remains a future adapter concern.
 
 ## Decisions Made
 

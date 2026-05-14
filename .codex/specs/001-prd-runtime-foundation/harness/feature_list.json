@@ -49,14 +49,14 @@
       "id": "T-007",
       "title": "Add final edge-case tests and contract assertions",
       "batch": "4 - Packaging smoke and final hardening",
-      "status": "pending",
+      "status": "passed",
       "validation_present": true
     },
     {
       "id": "T-008",
       "title": "Run editable-install smoke and final repo gate",
       "batch": "4 - Packaging smoke and final hardening",
-      "status": "pending",
+      "status": "passed",
       "validation_present": true
     }
   ]

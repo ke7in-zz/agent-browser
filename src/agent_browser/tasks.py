@@ -1,6 +1,9 @@
+import os
+from collections.abc import Callable
+from contextlib import redirect_stdout
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Callable, Literal
+from typing import Literal
 from uuid import uuid4
 
 from agent_browser.storage.repositories import TaskRepository
@@ -70,12 +73,32 @@ def run_task(
     with repo.conn:
         repo.insert_running(task_id, request.task_name, request.prompt, started_at)
         try:
-            outcome = handler(request)
+            # Keep Python-level handler prints out of CLI stdout/JSON output.
+            with open(os.devnull, "w", encoding="utf-8") as sink, redirect_stdout(sink):
+                outcome = handler(request)
         except Exception as exc:  # noqa: BLE001 - task failures are persisted as data.
             ended_at = clock().isoformat()
             error = summarize_error(exc)
             repo.mark_failed(task_id, ended_at, error)
-            return TaskResult(task_id, request.task_name, request.prompt, "failed", started_at, ended_at, None, error)
+            return TaskResult(
+                task_id,
+                request.task_name,
+                request.prompt,
+                "failed",
+                started_at,
+                ended_at,
+                None,
+                error,
+            )
         ended_at = clock().isoformat()
         repo.mark_completed(task_id, ended_at, outcome.result)
-        return TaskResult(task_id, request.task_name, request.prompt, "completed", started_at, ended_at, outcome.result, None)
+        return TaskResult(
+            task_id,
+            request.task_name,
+            request.prompt,
+            "completed",
+            started_at,
+            ended_at,
+            outcome.result,
+            None,
+        )

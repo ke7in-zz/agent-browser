@@ -61,3 +61,17 @@ def test_status_check_rejects_invalid_status(tmp_path):
                 "INSERT INTO tasks (id, task_name, prompt, status, started_at) VALUES (?, ?, ?, ?, ?)",
                 ("bad", "noop", "hello", "unknown", "start"),
             )
+
+
+def test_repository_methods_do_not_commit_without_orchestrator(tmp_path):
+    db_path = tmp_path / "db.sqlite3"
+    conn = open_db(db_path)
+    repo = TaskRepository(conn)
+    repo.insert_running("task-1", "noop", "hello", "start")
+
+    with open_db(db_path) as second:
+        count = second.execute("SELECT COUNT(*) FROM tasks").fetchone()[0]
+
+    conn.rollback()
+    conn.close()
+    assert count == 0

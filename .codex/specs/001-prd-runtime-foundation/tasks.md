@@ -186,7 +186,7 @@ Focus Gate:
 
 Rationale: Verify the package is usable the way Pi/shell will invoke it, then complete final contract checks and documentation consistency without adding new feature scope.
 
-- [ ] T-007: Add final edge-case tests and contract assertions
+- [x] T-007: Add final edge-case tests and contract assertions
   - Objective: Cover remaining design review edge cases before packaging smoke: no browser dependency imports, no stdout pollution from handlers, status CHECK evolution note remains documented, and repository methods do not commit outside orchestrator ownership.
   - Files (create/modify):
     - `tests/unit/test_cli.py`
@@ -201,9 +201,9 @@ Rationale: Verify the package is usable the way Pi/shell will invoke it, then co
     - Integration: N/A — edge assertions remain in-process with temp SQLite.
   - Validation:
     - `pytest -q`
-  - Result: pending
+  - Result: Added final contract tests for import surface, repository commit ownership, and handler stdout suppression.
 
-- [ ] T-008: Run editable-install smoke and final repo gate
+- [x] T-008: Run editable-install smoke and final repo gate
   - Objective: Prove both entrypoints work after editable installation and the full validation gate passes with no browser/CDP prerequisite.
   - Files (create/modify):
     - `pyproject.toml`
@@ -219,7 +219,7 @@ Rationale: Verify the package is usable the way Pi/shell will invoke it, then co
     - `python -m agent_browser --help`
     - `agent-browser --help`
     - `AGENT_BROWSER_DB_PATH=$(mktemp -u).sqlite3 agent-browser run --task noop --prompt "test" --json`
-  - Result: pending
+  - Result: Validated editable install, both help entrypoints (using a temporary python→python3 PATH shim for the documented `python -m` smoke because this WSL image lacks a `python` alias), no-op JSON execution, and full pytest gate without browser/CDP prerequisites.
 
 Batch validation:
 

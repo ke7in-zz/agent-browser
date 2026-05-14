@@ -1,10 +1,13 @@
+import json
 import os
+import sqlite3
 import subprocess
 import sys
 
 import pytest
 
 from agent_browser import cli
+from agent_browser.tasks import register_handler
 
 
 def run_cli(argv):
@@ -39,11 +42,6 @@ def test_parser_uses_agent_browser_prog(capsys):
 
     captured = capsys.readouterr()
     assert captured.out.startswith("usage: agent-browser")
-
-import json
-import sqlite3
-
-from agent_browser.tasks import TaskOutcome, register_handler
 
 
 def row_count(db_path):
@@ -152,3 +150,26 @@ def test_db_open_errors_leave_stdout_empty(cli_runner, monkeypatch, tmp_path):
     assert exit_code == 3
     assert stdout == ""
     assert f"cannot open database at {blocked / 'db.sqlite3'}" in stderr
+
+
+def test_help_does_not_import_future_browser_agent_or_workflow_modules():
+    code = """
+import sys
+from agent_browser import cli
+try:
+    cli.main(['--help'])
+except SystemExit:
+    pass
+forbidden = {'agent_browser.browser', 'agent_browser.agents', 'agent_browser.workflows'}
+print(sorted(forbidden & set(sys.modules)))
+"""
+    completed = subprocess.run(
+        [sys.executable, "-c", code],
+        check=False,
+        capture_output=True,
+        text=True,
+        env={**os.environ, "PYTHONPATH": "src"},
+    )
+
+    assert completed.returncode == 0
+    assert completed.stdout.splitlines()[-1] == "[]"
