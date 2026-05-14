@@ -75,7 +75,7 @@ Focus Gate:
 
 Rationale: Build the durable task substrate and lifecycle orchestrator before exposing the full CLI run flow, so persistence semantics and transaction behavior are tested independently.
 
-- [ ] T-003: Implement SQLite connection helper and repository
+- [x] T-003: Implement SQLite connection helper and repository
   - Objective: Create the idempotent `tasks` schema, connection helper, and repository methods without orchestration logic.
   - Files (create/modify):
     - `src/agent_browser/storage/__init__.py`
@@ -92,9 +92,9 @@ Rationale: Build the durable task substrate and lifecycle orchestrator before ex
     - Integration: repository transaction boundary exercised by reading committed rows from a second connection.
   - Validation:
     - `pytest -q`
-  - Result: pending
+  - Result: Added SQLite schema initialization, connection helper, repository persistence methods, and storage tests.
 
-- [ ] T-004: Implement task dataclasses, handler registry, and transaction-owned orchestration
+- [x] T-004: Implement task dataclasses, handler registry, and transaction-owned orchestration
   - Objective: Add `TaskRequest`, `TaskOutcome`, `TaskResult`, `UnknownTaskError`, handler registration helpers, deterministic test seams, and `run_task` with atomic SQLite transaction semantics.
   - Files (create/modify):
     - `src/agent_browser/tasks.py`
@@ -114,7 +114,7 @@ Rationale: Build the durable task substrate and lifecycle orchestrator before ex
     - Integration: `run_task` commits the final row so it is visible through a second SQLite connection.
   - Validation:
     - `pytest -q`
-  - Result: pending
+  - Result: Added task dataclasses, noop handler registration, atomic run_task orchestration, failure persistence, and deterministic tests.
 
 Batch validation:
 

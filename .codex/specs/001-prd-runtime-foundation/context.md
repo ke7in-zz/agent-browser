@@ -2,10 +2,10 @@
 
 ## Status
 
-Last completed batch: 1
-Remaining batches: Batch 2 - SQLite persistence and task lifecycle core; Batch 3 - CLI run flow and machine-readable output; Batch 4 - Packaging smoke and final hardening
-Next exact step: T-003: Implement SQLite connection helper and repository
-Next command: /skill:spec-execute 001-prd-runtime-foundation batch 2
+Last completed batch: 2
+Remaining batches: Batch 3 - CLI run flow and machine-readable output; Batch 4 - Packaging smoke and final hardening
+Next exact step: T-005: Implement `run` command argument handling and exit-code mapping
+Next command: /skill:spec-execute 001-prd-runtime-foundation batch 3
 Resume from (file:line): .codex/specs/001-prd-runtime-foundation/harness/progress.md:4
 
 ## Key Discoveries
@@ -16,6 +16,10 @@ Resume from (file:line): .codex/specs/001-prd-runtime-foundation/harness/progres
 
 - [Batch 1] `pyproject.toml` uses a src layout with pytest `pythonpath = ["src"]`; no runtime dependencies are declared.
 - [Batch 1] `resolve_db_path` treats empty `AGENT_BROWSER_DB_PATH` as unset and rejects relative overrides before any DB open.
+
+- [Batch 2] `open_db(path)` creates parent directories, opens SQLite, sets `sqlite3.Row`, and applies the `tasks` schema idempotently.
+- [Batch 2] Repository methods intentionally do not commit; `run_task` owns durability with `with repo.conn:` and commits terminal task rows.
+- [Batch 2] Unknown task names fail before row insertion; handler exceptions return a failed `TaskResult` and persist a truncated error summary without traceback.
 
 ## Decisions Made
 

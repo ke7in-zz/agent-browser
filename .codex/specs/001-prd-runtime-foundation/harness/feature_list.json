@@ -21,14 +21,14 @@
       "id": "T-003",
       "title": "Implement SQLite connection helper and repository",
       "batch": "2 - SQLite persistence and task lifecycle core",
-      "status": "pending",
+      "status": "passed",
       "validation_present": true
     },
     {
       "id": "T-004",
       "title": "Implement task dataclasses, handler registry, and transaction-owned orchestration",
       "batch": "2 - SQLite persistence and task lifecycle core",
-      "status": "pending",
+      "status": "passed",
       "validation_present": true
     },
     {
