@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv*/
+venv/
+
+# Local config / secrets
+.env
+.env.local
+
+# Local data and browser artifacts
+*.db
+*.sqlite
+*.sqlite3
+artifacts/
+screenshots/
+traces/
+browser-profiles/
+
+# OS/editor
+.DS_Store
+.vscode/
+.idea/
