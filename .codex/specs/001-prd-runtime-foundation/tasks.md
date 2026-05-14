@@ -133,7 +133,7 @@ Focus Gate:
 
 Rationale: Wire the already-tested task core into the operator-facing command, then prove human and JSON output contracts through end-to-end CLI tests.
 
-- [ ] T-005: Implement `run` command argument handling and exit-code mapping
+- [x] T-005: Implement `run` command argument handling and exit-code mapping
   - Objective: Parse `run --task --prompt [--json]`, open the configured DB, dispatch `run_task`, and map usage/DB/unknown/handler outcomes to the approved exit codes.
   - Files (create/modify):
     - `src/agent_browser/cli.py`
@@ -150,9 +150,9 @@ Rationale: Wire the already-tested task core into the operator-facing command, t
     - Integration: CLI `run --task noop --prompt hello` against `tmp_db_path` creates exactly one completed row.
   - Validation:
     - `pytest -q`
-  - Result: pending
+  - Result: Implemented run command parsing, DB opening, task dispatch, exit-code mapping, and error-path tests.
 
-- [ ] T-006: Implement human and JSON result formatting
+- [x] T-006: Implement human and JSON result formatting
   - Objective: Print concise human output by default and stable JSON-only stdout for `--json` success/handler-failure paths.
   - Files (create/modify):
     - `src/agent_browser/cli.py`
@@ -167,7 +167,7 @@ Rationale: Wire the already-tested task core into the operator-facing command, t
     - Integration: JSON output parses and matches the committed SQLite row for the same task id.
   - Validation:
     - `pytest -q`
-  - Result: pending
+  - Result: Added human output, stable JSON serialization, handler-failure JSON behavior, and SQLite row matching tests.
 
 Batch validation:
 

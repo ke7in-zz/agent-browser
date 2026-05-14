@@ -22,7 +22,7 @@ def tmp_db_path(monkeypatch, tmp_path):
 
 
 @pytest.fixture
-def cli_runner():
+def cli_runner(tmp_db_path):
     from agent_browser import cli
 
     def run(argv):

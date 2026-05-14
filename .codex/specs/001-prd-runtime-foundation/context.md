@@ -2,10 +2,10 @@
 
 ## Status
 
-Last completed batch: 2
-Remaining batches: Batch 3 - CLI run flow and machine-readable output; Batch 4 - Packaging smoke and final hardening
-Next exact step: T-005: Implement `run` command argument handling and exit-code mapping
-Next command: /skill:spec-execute 001-prd-runtime-foundation batch 3
+Last completed batch: 3
+Remaining batches: Batch 4 - Packaging smoke and final hardening
+Next exact step: T-007: Add final edge-case tests and contract assertions
+Next command: /skill:spec-execute 001-prd-runtime-foundation batch 4
 Resume from (file:line): .codex/specs/001-prd-runtime-foundation/harness/progress.md:4
 
 ## Key Discoveries
@@ -20,6 +20,9 @@ Resume from (file:line): .codex/specs/001-prd-runtime-foundation/harness/progres
 - [Batch 2] `open_db(path)` creates parent directories, opens SQLite, sets `sqlite3.Row`, and applies the `tasks` schema idempotently.
 - [Batch 2] Repository methods intentionally do not commit; `run_task` owns durability with `with repo.conn:` and commits terminal task rows.
 - [Batch 2] Unknown task names fail before row insertion; handler exceptions return a failed `TaskResult` and persist a truncated error summary without traceback.
+
+- [Batch 3] CLI `run` opens the configured SQLite database before dispatch and maps unknown tasks to exit 4, DB/path errors to exit 3, handler failures to exit 1, and completions to exit 0.
+- [Batch 3] JSON output is generated with `dataclasses.asdict(TaskResult)`, preserving dataclass field order for the approved schema.
 
 ## Decisions Made
 
