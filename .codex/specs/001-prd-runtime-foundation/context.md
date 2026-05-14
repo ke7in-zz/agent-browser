@@ -26,6 +26,7 @@ Resume from (file:line): .codex/specs/001-prd-runtime-foundation/harness/progres
 
 - [Batch 4] Editable install succeeded with hatchling and exposed `agent-browser`; both module and console help entrypoints work after installation. This WSL image lacks a `python` alias, so the documented `python -m agent_browser --help` smoke was run with a temporary PATH shim pointing `python` to `python3`.
 - [Batch 4] `run_task` redirects Python-level handler `sys.stdout`/`print` output during invocation so normal handler prints do not pollute CLI JSON stdout; file-descriptor/subprocess stdout remains a future adapter concern.
+- [Smoke] Automated smoke verified `pytest -q`, module help, console help, and no-op JSON execution against a temp SQLite DB. No manual checks remain.
 
 ## Decisions Made
 
