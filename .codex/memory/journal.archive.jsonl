@@ -1,0 +1,1 @@
+{"id":"65bdac7ca803","timestamp":"2026-05-14T14:03:09.426Z","repoPath":"/home/ke7in/Projects/agent-browser","eventType":"tool_error","summary":"bash failed: no tests ran in 0.00s","files":[],"source":"tool:bash","metadata":{"toolCallId":"call_QU4bsgfTQmwoyHdFGSG8yt4f|fc_0a683ba4b86676b3016a05d612501c81919e225c2625de06a4","toolName":"bash"}}
