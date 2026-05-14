@@ -36,6 +36,7 @@ Pi is the command/control surface. A Pi-triggered task enters the Python runtime
 - Bind CDP as narrowly as feasible: Windows localhost when possible, or a Windows host address reachable only from WSL/local machine.
 - Store secrets in local `.env` or Pi/provider configuration; never hardcode credentials, tokens, or profile-specific secrets.
 - Logs must avoid sensitive page contents and message bodies by default.
+- CLI stdout is reserved for operator/script results; task handlers must not write directly to stdout so JSON output remains parseable.
 - High-risk actions require explicit operator approval before execution.
 
 ## Constraints

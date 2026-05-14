@@ -1,0 +1,22 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "agent-browser"
+version = "0.1.0"
+description = "Local-first browser automation runtime foundation"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[project.scripts]
+agent-browser = "agent_browser.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/agent_browser"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]

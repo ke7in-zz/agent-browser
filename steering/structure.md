@@ -41,6 +41,7 @@ agent-browser/
 ## Module / Package Boundaries
 
 - `cli.py` is a thin entrypoint; it parses intent/config and delegates to orchestration.
+- The runtime exposes both `python -m agent_browser` for development fallback and an `agent-browser` console script for Pi/shell invocation.
 - `tasks.py` owns task lifecycle and orchestration flow.
 - `approvals.py` owns action-risk classification and approval decisions.
 - `browser/` owns Playwright and CDP mechanics.

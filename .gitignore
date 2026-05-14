@@ -28,3 +28,6 @@ browser-profiles/
 .DS_Store
 .vscode/
 .idea/
+
+# Local tool caches
+.pi-lens/

@@ -1,0 +1,63 @@
+{
+  "spec_name": "001-prd-runtime-foundation",
+  "generated_from": "tasks.md",
+  "generated_at": "2026-05-14T18:23:02.251953Z",
+  "tasks": [
+    {
+      "id": "T-001",
+      "title": "Add Python package metadata and empty importable package",
+      "batch": "1 - Package shell and configuration",
+      "status": "passed",
+      "validation_present": true
+    },
+    {
+      "id": "T-002",
+      "title": "Implement database path resolution",
+      "batch": "1 - Package shell and configuration",
+      "status": "passed",
+      "validation_present": true
+    },
+    {
+      "id": "T-003",
+      "title": "Implement SQLite connection helper and repository",
+      "batch": "2 - SQLite persistence and task lifecycle core",
+      "status": "passed",
+      "validation_present": true
+    },
+    {
+      "id": "T-004",
+      "title": "Implement task dataclasses, handler registry, and transaction-owned orchestration",
+      "batch": "2 - SQLite persistence and task lifecycle core",
+      "status": "passed",
+      "validation_present": true
+    },
+    {
+      "id": "T-005",
+      "title": "Implement `run` command argument handling and exit-code mapping",
+      "batch": "3 - CLI run flow and machine-readable output",
+      "status": "passed",
+      "validation_present": true
+    },
+    {
+      "id": "T-006",
+      "title": "Implement human and JSON result formatting",
+      "batch": "3 - CLI run flow and machine-readable output",
+      "status": "passed",
+      "validation_present": true
+    },
+    {
+      "id": "T-007",
+      "title": "Add final edge-case tests and contract assertions",
+      "batch": "4 - Packaging smoke and final hardening",
+      "status": "passed",
+      "validation_present": true
+    },
+    {
+      "id": "T-008",
+      "title": "Run editable-install smoke and final repo gate",
+      "batch": "4 - Packaging smoke and final hardening",
+      "status": "passed",
+      "validation_present": true
+    }
+  ]
+}
