@@ -4,9 +4,9 @@
 
 Last completed batch: 4
 Remaining batches: none
-Next exact step: Run spec verification
-Next command: /skill:spec-verify 001-prd-runtime-foundation
-Resume from (file:line): .codex/specs/001-prd-runtime-foundation/harness/progress.md:4
+Next exact step: verification complete
+Next command: none
+Resume from (file:line): .codex/specs/001-prd-runtime-foundation/verification.md:1
 
 ## Key Discoveries
 
@@ -27,6 +27,7 @@ Resume from (file:line): .codex/specs/001-prd-runtime-foundation/harness/progres
 - [Batch 4] Editable install succeeded with hatchling and exposed `agent-browser`; both module and console help entrypoints work after installation. This WSL image lacks a `python` alias, so the documented `python -m agent_browser --help` smoke was run with a temporary PATH shim pointing `python` to `python3`.
 - [Batch 4] `run_task` redirects Python-level handler `sys.stdout`/`print` output during invocation so normal handler prints do not pollute CLI JSON stdout; file-descriptor/subprocess stdout remains a future adapter concern.
 - [Smoke] Automated smoke verified `pytest -q`, module help, console help, and no-op JSON execution against a temp SQLite DB. No manual checks remain.
+- [verify] Verification passed all requirements, design conformance, focus checks, documentation staleness checks, final validation gates, and smoke checks. No operator-only checks remain.
 
 ## Decisions Made
 
@@ -45,6 +46,7 @@ Resume from (file:line): .codex/specs/001-prd-runtime-foundation/harness/progres
 - [Tasks] Decision: Generated 8 implementation tasks across 4 batches and marked design/tasks approved — Rationale: stage package/config before persistence, persistence before CLI wiring, CLI before final packaging smoke.
 
 - [Batch 1] Decision: Amend DB-open error design to catch `sqlite3.Error` separately from `OSError` — Rationale: implementation must satisfy R-05 AC4 because `sqlite3.OperationalError` is not an `OSError` subclass.
+- [verify] Decision: Close verification as PASS — Rationale: all requirements are evidenced, final gates passed, and no manual checks remain.
 
 ## Carry-forward Warnings
 
