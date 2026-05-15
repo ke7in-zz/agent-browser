@@ -1,5 +1,16 @@
 # SoundCloud Outreach
 
+## Model
+
+Required preset: **`build`** — `anthropic-hai/claude-opus-4-6`, medium thinking, full tools.
+
+If the active model is not `claude-opus-4-6`, switch before executing any step:
+
+- Invoked via `/skill:`: run `/preset build` first.
+- Invoked via natural language: run `/preset build` now, then proceed.
+
+---
+
 Automate fan engagement messaging on SoundCloud. Builds audience lists from track likers or account followers, applies exclusions, sends messages with track attachments respecting rate limits, and produces a summary report.
 
 ## Inputs
@@ -10,13 +21,13 @@ Automate fan engagement messaging on SoundCloud. Builds audience lists from trac
 
 ### Arguments
 
-| Argument | Required | Description |
-|----------|----------|-------------|
-| `audience` | yes | One of: `likers` (people who liked your public tracks in the last 3 years) or `followers` (your account followers) |
-| `--attach` | yes | Track name to attach via "add track or playlist" (matched from your own tracks) |
-| `--message` | yes | Message body text |
-| `--resume` | no | Resume a previously interrupted run from the queue file |
-| `--dry-run` | no | Build the list and show the plan without sending |
+| Argument    | Required | Description                                                                                                        |
+| ----------- | -------- | ------------------------------------------------------------------------------------------------------------------ |
+| `audience`  | yes      | One of: `likers` (people who liked your public tracks in the last 3 years) or `followers` (your account followers) |
+| `--attach`  | yes      | Track name to attach via "add track or playlist" (matched from your own tracks)                                    |
+| `--message` | yes      | Message body text                                                                                                  |
+| `--resume`  | no       | Resume a previously interrupted run from the queue file                                                            |
+| `--dry-run` | no       | Build the list and show the plan without sending                                                                   |
 
 ## Prerequisites
 
@@ -32,8 +43,8 @@ Maintained in `.pi/skills/soundcloud-outreach/exclusions.yaml`. These accounts a
 excluded_slugs:
   - funkybeans
   - ryan-lee-234065614
-  - morankj          # driftsett
-  - supermoda1       # self
+  - morankj # driftsett
+  - supermoda1 # self
   - astronavis
 ```
 
@@ -72,6 +83,7 @@ For each recipient in the queue:
 7. Log the result to `/tmp/sc_outreach_progress.json`.
 
 **Rate limit handling:**
+
 - Wait 12 seconds between successful sends.
 - After 3 consecutive failures/uncertain results, pause for 5 minutes.
 - After 5 consecutive failures, pause for 30 minutes.
@@ -123,11 +135,11 @@ For large audiences (>20), expect the skill to complete across multiple sessions
 
 ## File Outputs
 
-| File | Purpose |
-|------|---------|
-| `/tmp/sc_outreach_queue.json` | Full audience list with send status |
-| `/tmp/sc_outreach_progress.json` | Per-recipient send results |
-| `.pi/skills/soundcloud-outreach/exclusions.yaml` | Permanent do-not-message list |
+| File                                             | Purpose                             |
+| ------------------------------------------------ | ----------------------------------- |
+| `/tmp/sc_outreach_queue.json`                    | Full audience list with send status |
+| `/tmp/sc_outreach_progress.json`                 | Per-recipient send results          |
+| `.pi/skills/soundcloud-outreach/exclusions.yaml` | Permanent do-not-message list       |
 
 ## Examples
 
@@ -151,14 +163,14 @@ For large audiences (>20), expect the skill to complete across multiple sessions
 
 ## Error Handling
 
-| Scenario | Behavior |
-|----------|----------|
-| No CDP connection | Stop with connection error |
-| Not logged into SoundCloud | Stop with auth error |
-| Track not found in library | Stop with track-not-found error |
-| User has no "Message" button | Skip, log as "no message button" |
-| Rate limited mid-run | Save progress, report remaining, suggest resume time |
-| Browser page crash | Attempt reconnect once, then stop |
+| Scenario                     | Behavior                                             |
+| ---------------------------- | ---------------------------------------------------- |
+| No CDP connection            | Stop with connection error                           |
+| Not logged into SoundCloud   | Stop with auth error                                 |
+| Track not found in library   | Stop with track-not-found error                      |
+| User has no "Message" button | Skip, log as "no message button"                     |
+| Rate limited mid-run         | Save progress, report remaining, suggest resume time |
+| Browser page crash           | Attempt reconnect once, then stop                    |
 
 ## Approval Model
 
