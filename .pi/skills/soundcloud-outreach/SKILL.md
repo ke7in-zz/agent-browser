@@ -1,3 +1,8 @@
+---
+name: soundcloud-outreach
+description: Automate fan engagement messaging on SoundCloud — builds audience lists from track likers or followers, sends messages with track attachments respecting rate limits, and reports progress.
+---
+
 # SoundCloud Outreach
 
 ## Model
