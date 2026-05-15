@@ -26,13 +26,14 @@ PROGRESS_FILE = Path("/tmp/sc_outreach_progress.json")
 
 # Rate limit tuning
 DELAY_BETWEEN_SENDS = 12
-PAUSE_AFTER_3_FAILS = 300      # 5 min
-PAUSE_AFTER_5_FAILS = 1800     # 30 min
+PAUSE_AFTER_3_FAILS = 300  # 5 min
+PAUSE_AFTER_5_FAILS = 1800  # 30 min
 MAX_CONSECUTIVE_FAILS = 10
 MAX_SENDS_PER_SESSION = 18
 
 
 # --- WebSocket CDP client ---
+
 
 def _recvall(sock, n):
     b = b""
@@ -112,14 +113,19 @@ class CDPClient:
     def call(self, method: str, params: dict | None = None) -> dict:
         self._msg_id += 1
         mid = self._msg_id
-        self._send_frame(json.dumps({"id": mid, "method": method, "params": params or {}}).encode())
+        self._send_frame(
+            json.dumps({"id": mid, "method": method, "params": params or {}}).encode()
+        )
         while True:
             msg = json.loads(self._recv_frame())
             if msg.get("id") == mid:
                 return msg
 
     def evaluate(self, expr: str):
-        r = self.call("Runtime.evaluate", {"expression": expr, "awaitPromise": True, "returnByValue": True})
+        r = self.call(
+            "Runtime.evaluate",
+            {"expression": expr, "awaitPromise": True, "returnByValue": True},
+        )
         return r.get("result", {}).get("result", {}).get("value")
 
     def navigate(self, url: str):
@@ -127,6 +133,7 @@ class CDPClient:
 
 
 # --- Exclusion list ---
+
 
 def load_exclusions() -> set[str]:
     if not EXCLUSIONS_FILE.exists():
@@ -151,6 +158,7 @@ def load_exclusions() -> set[str]:
 
 # --- Audience building ---
 
+
 def get_client_id() -> str:
     return "gxPRNsEq7CDD7Wvem4iymWOq3YfU7KS8"
 
@@ -161,15 +169,29 @@ def get_user_id() -> int:
 
 def fetch_likers(cid: str, uid: int) -> list[dict]:
     """Fetch unique likers across all public tracks from the last 3 years."""
-    cutoff = datetime.now(timezone.utc).replace(year=datetime.now(timezone.utc).year - 3)
+    cutoff = datetime.now(timezone.utc).replace(
+        year=datetime.now(timezone.utc).year - 3
+    )
 
     # Get tracks
     url = f"https://api-v2.soundcloud.com/users/{uid}/tracks?" + urllib.parse.urlencode(
-        {"client_id": cid, "limit": 100, "offset": 0, "linked_partitioning": "1", "app_version": "1778677443", "app_locale": "en"}
+        {
+            "client_id": cid,
+            "limit": 100,
+            "offset": 0,
+            "linked_partitioning": "1",
+            "app_version": "1778677443",
+            "app_locale": "en",
+        }
     )
     tracks = []
     while url:
-        data = json.load(urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"}), timeout=20))
+        data = json.load(
+            urllib.request.urlopen(
+                urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"}),
+                timeout=20,
+            )
+        )
         tracks += data.get("collection", [])
         url = data.get("next_href")
         if url and "client_id=" not in url:
@@ -178,26 +200,54 @@ def fetch_likers(cid: str, uid: int) -> list[dict]:
     # Filter to recent public original tracks
     selected = []
     for t in tracks:
-        dt = datetime.fromisoformat((t.get("display_date") or t.get("created_at")).replace("Z", "+00:00"))
-        if dt >= cutoff and t.get("sharing") == "public" and t.get("user_id") == uid and (t.get("likes_count") or 0) > 0:
+        dt = datetime.fromisoformat(
+            (t.get("display_date") or t.get("created_at")).replace("Z", "+00:00")
+        )
+        if (
+            dt >= cutoff
+            and t.get("sharing") == "public"
+            and t.get("user_id") == uid
+            and (t.get("likes_count") or 0) > 0
+        ):
             selected.append(t)
 
     # Collect likers
     users = {}
     for t in selected:
         tid = t["id"]
-        url = f"https://api-v2.soundcloud.com/tracks/{tid}/likers?" + urllib.parse.urlencode(
-            {"client_id": cid, "limit": 200, "offset": 0, "linked_partitioning": "1", "app_version": "1778677443", "app_locale": "en"}
+        url = (
+            f"https://api-v2.soundcloud.com/tracks/{tid}/likers?"
+            + urllib.parse.urlencode(
+                {
+                    "client_id": cid,
+                    "limit": 200,
+                    "offset": 0,
+                    "linked_partitioning": "1",
+                    "app_version": "1778677443",
+                    "app_locale": "en",
+                }
+            )
         )
         while url:
             try:
-                data = json.load(urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"}), timeout=20))
+                data = json.load(
+                    urllib.request.urlopen(
+                        urllib.request.Request(
+                            url, headers={"User-Agent": "Mozilla/5.0"}
+                        ),
+                        timeout=20,
+                    )
+                )
             except urllib.error.HTTPError:
                 break
             for u in data.get("collection", []):
                 uid2 = u.get("id")
                 if uid2 not in users:
-                    users[uid2] = {"slug": u.get("permalink"), "username": u.get("username"), "url": u.get("permalink_url")}
+                    users[uid2] = {
+                        "slug": u.get("permalink"),
+                        "username": u.get("username"),
+                        "url": u.get("permalink_url"),
+                    }
             url = data.get("next_href")
             if url and "client_id=" not in url:
                 url += ("&" if "?" in url else "?") + "client_id=" + cid
@@ -208,18 +258,37 @@ def fetch_likers(cid: str, uid: int) -> list[dict]:
 def fetch_followers(cid: str, uid: int) -> list[dict]:
     """Fetch all followers."""
     users = {}
-    url = f"https://api-v2.soundcloud.com/users/{uid}/followers?" + urllib.parse.urlencode(
-        {"client_id": cid, "limit": 200, "offset": 0, "linked_partitioning": "1", "app_version": "1778677443", "app_locale": "en"}
+    url = (
+        f"https://api-v2.soundcloud.com/users/{uid}/followers?"
+        + urllib.parse.urlencode(
+            {
+                "client_id": cid,
+                "limit": 200,
+                "offset": 0,
+                "linked_partitioning": "1",
+                "app_version": "1778677443",
+                "app_locale": "en",
+            }
+        )
     )
     while url:
         try:
-            data = json.load(urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"}), timeout=20))
+            data = json.load(
+                urllib.request.urlopen(
+                    urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"}),
+                    timeout=20,
+                )
+            )
         except urllib.error.HTTPError:
             break
         for u in data.get("collection", []):
             uid2 = u.get("id")
             if uid2 not in users:
-                users[uid2] = {"slug": u.get("permalink"), "username": u.get("username"), "url": u.get("permalink_url")}
+                users[uid2] = {
+                    "slug": u.get("permalink"),
+                    "username": u.get("username"),
+                    "url": u.get("permalink_url"),
+                }
         url = data.get("next_href")
         if url and "client_id=" not in url:
             url += ("&" if "?" in url else "?") + "client_id=" + cid
@@ -228,6 +297,7 @@ def fetch_followers(cid: str, uid: int) -> list[dict]:
 
 
 # --- Track resolution ---
+
 
 def resolve_track(cdp: CDPClient, track_query: str) -> str | None:
     """Find the track share URL (with secret token if private) from the browser session."""
@@ -259,10 +329,13 @@ def resolve_track(cdp: CDPClient, track_query: str) -> str | None:
 
 # --- Message sending ---
 
+
 def send_one_message(cdp: CDPClient, slug: str, message_with_url: str) -> str:
     """Send a single message via the SoundCloud UI. Returns status string."""
     # Close any stale modal
-    cdp.evaluate("(() => { const c=document.querySelector('.modal__closeButton'); if(c) c.click(); })()")
+    cdp.evaluate(
+        "(() => { const c=document.querySelector('.modal__closeButton'); if(c) c.click(); })()"
+    )
     time.sleep(1)
 
     # Navigate to profile
@@ -279,12 +352,16 @@ def send_one_message(cdp: CDPClient, slug: str, message_with_url: str) -> str:
     time.sleep(3)
 
     # Verify modal
-    modal = cdp.evaluate("document.querySelector('.modal.showBackground')?.innerText || ''")
+    modal = cdp.evaluate(
+        "document.querySelector('.modal.showBackground')?.innerText || ''"
+    )
     if "New message" not in str(modal):
         return "SKIP_NO_MODAL"
 
     # Type message
-    escaped = message_with_url.replace("\\", "\\\\").replace("'", "\\'").replace("\n", "\\n")
+    escaped = (
+        message_with_url.replace("\\", "\\\\").replace("'", "\\'").replace("\n", "\\n")
+    )
     cdp.evaluate(
         f"(() => {{ const ta=document.querySelector('textarea.textfield__input'); "
         f"if(!ta) return null; ta.focus(); ta.value='{escaped}'; "
@@ -294,10 +371,14 @@ def send_one_message(cdp: CDPClient, slug: str, message_with_url: str) -> str:
     time.sleep(3)
 
     # Check track auto-attached
-    modal2 = cdp.evaluate("document.querySelector('.modal.showBackground')?.innerText || ''")
+    modal2 = cdp.evaluate(
+        "document.querySelector('.modal.showBackground')?.innerText || ''"
+    )
     if "Raw Style Synergy" not in str(modal2) and "supermōdal" not in str(modal2):
         # Try manual search
-        cdp.evaluate("(() => { const b=document.querySelector('.composeMessage__addSoundButton'); if(b)b.click(); })()")
+        cdp.evaluate(
+            "(() => { const b=document.querySelector('.composeMessage__addSoundButton'); if(b)b.click(); })()"
+        )
         time.sleep(2)
         cdp.evaluate(
             "(() => { const i=document.querySelector('.userAudibleSearch__input'); "
@@ -321,7 +402,9 @@ def send_one_message(cdp: CDPClient, slug: str, message_with_url: str) -> str:
     if "was sent successfully" in body_tail:
         return "SENT"
 
-    modal3 = cdp.evaluate("document.querySelector('.modal.showBackground')?.innerText || null")
+    modal3 = cdp.evaluate(
+        "document.querySelector('.modal.showBackground')?.innerText || null"
+    )
     if modal3 is None:
         return "SENT"
 
@@ -330,7 +413,14 @@ def send_one_message(cdp: CDPClient, slug: str, message_with_url: str) -> str:
 
 # --- Orchestrator ---
 
-def run_outreach(audience: str, track_query: str, message: str, dry_run: bool = False, resume: bool = False):
+
+def run_outreach(
+    audience: str,
+    track_query: str,
+    message: str,
+    dry_run: bool = False,
+    resume: bool = False,
+):
     """Main orchestration function."""
     cid = get_client_id()
     uid = get_user_id()
@@ -349,7 +439,9 @@ def run_outreach(audience: str, track_query: str, message: str, dry_run: bool = 
         elif audience == "followers":
             raw_list = fetch_followers(cid, uid)
         else:
-            raise ValueError(f"Unknown audience: {audience}. Use 'likers' or 'followers'.")
+            raise ValueError(
+                f"Unknown audience: {audience}. Use 'likers' or 'followers'."
+            )
 
         # Filter exclusions
         audience_list = [u for u in raw_list if u["slug"] not in exclusions]
@@ -403,12 +495,14 @@ def run_outreach(audience: str, track_query: str, message: str, dry_run: bool = 
     remaining = list(audience_list)
     for i, user in enumerate(remaining):
         if sends_this_session >= MAX_SENDS_PER_SESSION:
-            print(f"\nSession cap reached ({MAX_SENDS_PER_SESSION} sends). Save and stop.")
+            print(
+                f"\nSession cap reached ({MAX_SENDS_PER_SESSION} sends). Save and stop."
+            )
             break
 
         slug = user["slug"]
         name = user["username"]
-        print(f"[{i+1}/{len(remaining)}] {name} ({slug})...", end=" ", flush=True)
+        print(f"[{i + 1}/{len(remaining)}] {name} ({slug})...", end=" ", flush=True)
 
         status = send_one_message(cdp, slug, message_with_url)
         print(status)
@@ -448,7 +542,7 @@ def run_outreach(audience: str, track_query: str, message: str, dry_run: bool = 
     QUEUE_FILE.write_text(json.dumps(queue_data, indent=2, ensure_ascii=False))
 
     # Report
-    print(f"\n{'='*50}")
+    print(f"\n{'=' * 50}")
     print("## SoundCloud Outreach Report")
     print("")
     print(f"Audience: {audience}")
@@ -471,13 +565,104 @@ def run_outreach(audience: str, track_query: str, message: str, dry_run: bool = 
     print(f"\nQueue: {QUEUE_FILE}")
 
 
+def report_status():
+    """Report progress of the active queue."""
+    if not QUEUE_FILE.exists():
+        print("No active queue. Start a run first.")
+        return
+
+    import subprocess
+
+    data = json.loads(QUEUE_FILE.read_text())
+    sent = data.get("sent", [])
+    skipped = data.get("skipped", [])
+    failed = data.get("failed", [])
+    remaining = data.get("remaining", [])
+    total = len(sent) + len(skipped) + len(failed) + len(remaining)
+    created = data.get("created_at", "unknown")
+    audience = data.get("audience", "unknown")
+    track = data.get("track_query", "unknown")
+    msg_preview = data.get("message", "")[:80]
+
+    pct = (len(sent) / total * 100) if total > 0 else 0
+    days_left = (
+        (len(remaining) + MAX_SENDS_PER_SESSION - 1) // MAX_SENDS_PER_SESSION
+        if remaining
+        else 0
+    )
+
+    print("## SoundCloud Outreach Status")
+    print("")
+    print(f"Queue created: {created}")
+    print(f"Audience: {audience}")
+    print(f"Track: {track}")
+    print(f"Message: {msg_preview}...")
+    print("")
+    print(f"Progress: {len(sent)}/{total} sent ({pct:.0f}%)")
+    print("")
+    print("| Status | Count |")
+    print("|--------|-------|")
+    print(f"| Sent | {len(sent)} |")
+    print(f"| Skipped | {len(skipped)} |")
+    print(f"| Failed | {len(failed)} |")
+    print(f"| Remaining | {len(remaining)} |")
+    print(f"| **Total** | **{total}** |")
+    print("")
+    if days_left > 0:
+        print(f"Estimated days to complete: ~{days_left} (at {MAX_SENDS_PER_SESSION}/day)")
+    else:
+        print("Queue complete - all messages processed.")
+    print("")
+
+    # Cron status
+    cron_check = subprocess.run(["crontab", "-l"], capture_output=True, text=True)
+    if "sc-outreach-daily" in cron_check.stdout:
+        print("Cron: ACTIVE (daily at 10:00 AM)")
+    else:
+        print("Cron: NOT INSTALLED")
+    print("")
+
+    # Last log entries
+    log_path = Path("/tmp/sc_outreach_cron.log")
+    if log_path.exists():
+        lines = log_path.read_text().splitlines()
+        recent = [line for line in lines if line.startswith("[")][-5:]
+        if recent:
+            print("Recent log:")
+            for line in recent:
+                print(f"  {line}")
+    print(f"\nQueue file: {QUEUE_FILE}")
+
+
 if __name__ == "__main__":
     import argparse
+
     parser = argparse.ArgumentParser(description="SoundCloud outreach engine")
-    parser.add_argument("audience", choices=["likers", "followers"])
-    parser.add_argument("--attach", required=True)
-    parser.add_argument("--message", required=True)
+    parser.add_argument("audience", nargs="?", choices=["likers", "followers"])
+    parser.add_argument("--attach")
+    parser.add_argument("--message")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--resume", action="store_true")
+    parser.add_argument("--status", action="store_true")
     args = parser.parse_args()
-    run_outreach(args.audience, args.attach, args.message, args.dry_run, args.resume)
+
+    if args.status:
+        report_status()
+    elif args.resume:
+        if not args.audience:
+            if QUEUE_FILE.exists():
+                queue = json.loads(QUEUE_FILE.read_text())
+                args.audience = queue.get("audience", "likers")
+            else:
+                parser.error("No queue file to resume from.")
+        run_outreach(
+            args.audience, args.attach or "", args.message or "", args.dry_run, args.resume
+        )
+    else:
+        if not args.audience:
+            parser.error("audience is required (likers or followers)")
+        if not args.attach:
+            parser.error("--attach is required")
+        if not args.message:
+            parser.error("--message is required")
+        run_outreach(args.audience, args.attach, args.message, args.dry_run, args.resume)

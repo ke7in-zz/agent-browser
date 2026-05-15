@@ -28,6 +28,7 @@ Automate fan engagement messaging on SoundCloud. Builds audience lists from trac
 | `--message` | yes      | Message body text                                                                                                  |
 | `--resume`  | no       | Resume a previously interrupted run from the queue file                                                            |
 | `--dry-run` | no       | Build the list and show the plan without sending                                                                   |
+| `--status`  | no       | Report progress of the active queue without sending                                                                |
 
 ## Prerequisites
 
@@ -156,6 +157,9 @@ For large audiences (>20), expect the skill to complete across multiple sessions
 
 # Resume an interrupted run
 /skill:soundcloud-outreach likers --resume
+
+# Check progress of the active queue
+/skill:soundcloud-outreach --status
 
 # Preview the list without sending
 /skill:soundcloud-outreach likers --attach "Raw Style Synergy" --message "..." --dry-run

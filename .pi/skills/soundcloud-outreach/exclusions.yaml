@@ -2,8 +2,8 @@
 # Use the SoundCloud URL slug (the part after soundcloud.com/).
 
 excluded_slugs:
-  - funkybeans        # Funkybeans
-  - ryan-lee-234065614  # Ryan Lee
-  - morankj           # driftsett
-  - supermoda1        # self
-  - astronavis        # astronavis
+  - funkybeans # Funkybeans
+  - ryan-lee-234065614 # Ryan Lee
+  - morankj # driftsett
+  - supermoda1 # self
+  - astronavis # astronavis
