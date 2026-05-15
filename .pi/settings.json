@@ -1,0 +1,4 @@
+{
+  "provider": "anthropic-hai",
+  "model": "claude-sonnet-4-6"
+}
