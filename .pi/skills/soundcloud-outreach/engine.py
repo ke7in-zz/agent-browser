@@ -609,7 +609,9 @@ def report_status():
     print(f"| **Total** | **{total}** |")
     print("")
     if days_left > 0:
-        print(f"Estimated days to complete: ~{days_left} (at {MAX_SENDS_PER_SESSION}/day)")
+        print(
+            f"Estimated days to complete: ~{days_left} (at {MAX_SENDS_PER_SESSION}/day)"
+        )
     else:
         print("Queue complete - all messages processed.")
     print("")
@@ -656,7 +658,11 @@ if __name__ == "__main__":
             else:
                 parser.error("No queue file to resume from.")
         run_outreach(
-            args.audience, args.attach or "", args.message or "", args.dry_run, args.resume
+            args.audience,
+            args.attach or "",
+            args.message or "",
+            args.dry_run,
+            args.resume,
         )
     else:
         if not args.audience:
@@ -665,4 +671,6 @@ if __name__ == "__main__":
             parser.error("--attach is required")
         if not args.message:
             parser.error("--message is required")
-        run_outreach(args.audience, args.attach, args.message, args.dry_run, args.resume)
+        run_outreach(
+            args.audience, args.attach, args.message, args.dry_run, args.resume
+        )
