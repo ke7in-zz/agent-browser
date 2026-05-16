@@ -34,6 +34,7 @@ Pi is the command/control surface. A Pi-triggered task enters the Python runtime
 
 - CDP must never be exposed to a public network.
 - Bind CDP as narrowly as feasible: Windows localhost when possible, or a Windows host address reachable only from WSL/local machine.
+- **Current CDP access path**: Chrome binds to `127.0.0.1:9222` (Chrome 148+ ignores `--remote-debugging-address=0.0.0.0`). A `netsh interface portproxy` rule forwards `0.0.0.0:9222 → 127.0.0.1:9222` on the Windows host so WSL can reach it via the Tailscale IP `100.64.0.5:9222`. Setup: `netsh interface portproxy add v4tov4 listenport=9222 listenaddress=0.0.0.0 connectport=9222 connectaddress=127.0.0.1` (run as admin, persists across reboots).
 - Store secrets in local `.env` or Pi/provider configuration; never hardcode credentials, tokens, or profile-specific secrets.
 - Logs must avoid sensitive page contents and message bodies by default.
 - CLI stdout is reserved for operator/script results; task handlers must not write directly to stdout so JSON output remains parseable.

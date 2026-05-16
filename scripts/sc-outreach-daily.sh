@@ -3,9 +3,10 @@
 # Checks prerequisites, runs the engine with --resume, logs results.
 set -euo pipefail
 
-LOG="/tmp/sc_outreach_cron.log"
+STATE_DIR="/home/ke7in/Projects/agent-browser/.pi/skills/soundcloud-outreach/state"
+LOG="$STATE_DIR/cron.log"
 ENGINE="/home/ke7in/Projects/agent-browser/.pi/skills/soundcloud-outreach/engine.py"
-QUEUE="/tmp/sc_outreach_queue.json"
+QUEUE="$STATE_DIR/queue.json"
 
 log() { echo "[$(date -Iseconds)] $*" >>"$LOG"; }
 

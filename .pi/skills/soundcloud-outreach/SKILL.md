@@ -141,11 +141,13 @@ For large audiences (>20), expect the skill to complete across multiple sessions
 
 ## File Outputs
 
-| File                                             | Purpose                             |
-| ------------------------------------------------ | ----------------------------------- |
-| `/tmp/sc_outreach_queue.json`                    | Full audience list with send status |
-| `/tmp/sc_outreach_progress.json`                 | Per-recipient send results          |
-| `.pi/skills/soundcloud-outreach/exclusions.yaml` | Permanent do-not-message list       |
+| File                                                     | Purpose                                         |
+| -------------------------------------------------------- | ----------------------------------------------- |
+| `.pi/skills/soundcloud-outreach/state/queue.json`        | Full audience list with send status             |
+| `.pi/skills/soundcloud-outreach/state/progress.json`     | Per-recipient send results                      |
+| `.pi/skills/soundcloud-outreach/state/sent_history.json` | Persistent record of all accounts ever messaged |
+| `.pi/skills/soundcloud-outreach/state/cron.log`          | Cron runner log output                          |
+| `.pi/skills/soundcloud-outreach/exclusions.yaml`         | Permanent do-not-message list                   |
 
 ## Examples
 

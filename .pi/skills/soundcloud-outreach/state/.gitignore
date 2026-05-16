@@ -1,0 +1,5 @@
+# Runtime state — contains user-specific data, not for version control.
+# sent_history.json is the persistent dedup record (back up manually if needed).
+queue.json
+progress.json
+cron.log

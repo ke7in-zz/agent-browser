@@ -20,9 +20,12 @@ from pathlib import Path
 
 CDP = "http://100.64.0.5:9222"
 SKILL_DIR = Path(__file__).parent
+STATE_DIR = SKILL_DIR / "state"
+STATE_DIR.mkdir(parents=True, exist_ok=True)
 EXCLUSIONS_FILE = SKILL_DIR / "exclusions.yaml"
-QUEUE_FILE = Path("/tmp/sc_outreach_queue.json")
-PROGRESS_FILE = Path("/tmp/sc_outreach_progress.json")
+QUEUE_FILE = STATE_DIR / "queue.json"
+PROGRESS_FILE = STATE_DIR / "progress.json"
+SENT_HISTORY_FILE = STATE_DIR / "sent_history.json"
 
 # Rate limit tuning
 DELAY_BETWEEN_SENDS = 12
@@ -130,6 +133,31 @@ class CDPClient:
 
     def navigate(self, url: str):
         self.call("Page.navigate", {"url": url})
+
+
+# --- Sent history (persistent across reboots) ---
+
+
+def load_sent_slugs() -> set[str]:
+    """Load slugs of accounts already messaged from persistent history."""
+    if not SENT_HISTORY_FILE.exists():
+        return set()
+    history = json.loads(SENT_HISTORY_FILE.read_text())
+    return {entry["slug"] for entry in history if "slug" in entry}
+
+
+def append_sent_history(user: dict) -> None:
+    """Append a single sent record to persistent history."""
+    history = []
+    if SENT_HISTORY_FILE.exists():
+        history = json.loads(SENT_HISTORY_FILE.read_text())
+    history.append(
+        {
+            **user,
+            "sent_at": datetime.now(timezone.utc).isoformat(),
+        }
+    )
+    SENT_HISTORY_FILE.write_text(json.dumps(history, indent=2, ensure_ascii=False))
 
 
 # --- Exclusion list ---
@@ -299,11 +327,47 @@ def fetch_followers(cid: str, uid: int) -> list[dict]:
 # --- Track resolution ---
 
 
+def intercept_oauth_token(cdp: CDPClient) -> str | None:
+    """Intercept OAuth token from SoundCloud API requests via CDP Fetch domain."""
+    cdp.call(
+        "Fetch.enable",
+        {
+            "patterns": [
+                {
+                    "urlPattern": "*api-v2.soundcloud.com*",
+                    "requestStage": "Request",
+                }
+            ]
+        },
+    )
+    cdp.navigate("https://soundcloud.com/discover")
+
+    token = None
+    start = time.time()
+    while time.time() - start < 15:
+        try:
+            msg = json.loads(cdp._recv_frame())
+            if msg.get("method") == "Fetch.requestPaused":
+                params = msg.get("params", {})
+                headers = params.get("request", {}).get("headers", {})
+                auth = headers.get("Authorization") or headers.get("authorization")
+                if auth and "OAuth" in auth:
+                    token = auth.replace("OAuth ", "")
+                    cdp.call(
+                        "Fetch.continueRequest", {"requestId": params["requestId"]}
+                    )
+                    break
+                cdp.call("Fetch.continueRequest", {"requestId": params["requestId"]})
+        except Exception:
+            break
+
+    cdp.call("Fetch.disable")
+    return token
+
+
 def resolve_track(cdp: CDPClient, track_query: str) -> str | None:
     """Find the track share URL (with secret token if private) from the browser session."""
-    token = cdp.evaluate(
-        "JSON.parse(localStorage.getItem('V2::local::broadcast')).broadcast.args[0]"
-    )
+    token = intercept_oauth_token(cdp)
     if not token:
         return None
 
@@ -443,9 +507,17 @@ def run_outreach(
                 f"Unknown audience: {audience}. Use 'likers' or 'followers'."
             )
 
-        # Filter exclusions
-        audience_list = [u for u in raw_list if u["slug"] not in exclusions]
-        print(f"Audience: {len(raw_list)} total, {len(audience_list)} after exclusions")
+        # Filter exclusions and already-sent
+        already_sent = load_sent_slugs()
+        audience_list = [
+            u
+            for u in raw_list
+            if u["slug"] not in exclusions and u["slug"] not in already_sent
+        ]
+        print(
+            f"Audience: {len(raw_list)} total, {len(raw_list) - len(audience_list)} "
+            f"excluded/already-sent, {len(audience_list)} to message"
+        )
 
         # Resolve track
         print(f"Resolving track: {track_query}...")
@@ -509,6 +581,7 @@ def run_outreach(
 
         if status == "SENT":
             sent.append(user)
+            append_sent_history(user)
             consecutive_fails = 0
             sends_this_session += 1
             time.sleep(DELAY_BETWEEN_SENDS)
@@ -625,7 +698,7 @@ def report_status():
     print("")
 
     # Last log entries
-    log_path = Path("/tmp/sc_outreach_cron.log")
+    log_path = STATE_DIR / "cron.log"
     if log_path.exists():
         lines = log_path.read_text().splitlines()
         recent = [line for line in lines if line.startswith("[")][-5:]
