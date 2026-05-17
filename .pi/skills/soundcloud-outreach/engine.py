@@ -689,12 +689,15 @@ def report_status():
         print("Queue complete - all messages processed.")
     print("")
 
-    # Cron status
+    # Scheduler status
     cron_check = subprocess.run(["crontab", "-l"], capture_output=True, text=True)
-    if "sc-outreach-daily" in cron_check.stdout:
-        print("Cron: ACTIVE (daily at 10:00 AM)")
+    anacron_tab = Path.home() / ".anacron" / "anacrontab"
+    if anacron_tab.exists() and "sc-outreach-daily" in anacron_tab.read_text():
+        print("Scheduler: anacron (runs once/day when machine is on)")
+    elif "sc-outreach-daily" in cron_check.stdout:
+        print("Scheduler: cron (fixed daily schedule)")
     else:
-        print("Cron: NOT INSTALLED")
+        print("Scheduler: NOT CONFIGURED")
     print("")
 
     # Last log entries
