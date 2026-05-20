@@ -7,13 +7,36 @@ STATE_DIR="/home/ke7in/Projects/agent-browser/.pi/skills/soundcloud-outreach/sta
 LOG="$STATE_DIR/cron.log"
 ENGINE="/home/ke7in/Projects/agent-browser/.pi/skills/soundcloud-outreach/engine.py"
 QUEUE="$STATE_DIR/queue.json"
+CDP_URL="http://100.64.0.5:9222/json/version"
+CHROME_START_SCRIPT="D:\\Projects\\agent-browser\\start-agent-chrome.ps1"
 
 log() { echo "[$(date -Iseconds)] $*" >>"$LOG"; }
 
+cdp_reachable() {
+	curl -sf --max-time 5 "$CDP_URL" >/dev/null 2>&1
+}
+
+start_windows_chrome() {
+	if ! command -v powershell.exe >/dev/null 2>&1; then
+		log "ABORT: Chrome CDP not reachable and powershell.exe is unavailable"
+		return 1
+	fi
+
+	log "CDP not reachable; launching Windows Chrome via $CHROME_START_SCRIPT"
+	powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$CHROME_START_SCRIPT" >>"$LOG" 2>&1 || return 1
+
+	for _ in {1..10}; do
+		cdp_reachable && return 0
+		sleep 2
+	done
+
+	return 1
+}
+
 # --- Preflight checks ---
 
-# 1. CDP reachable?
-if ! curl -sf --max-time 5 http://100.64.0.5:9222/json/version >/dev/null 2>&1; then
+# 1. CDP reachable? Launch Chrome on the Windows host if needed.
+if ! cdp_reachable && ! start_windows_chrome; then
 	log "ABORT: Chrome CDP not reachable at 100.64.0.5:9222"
 	exit 1
 fi
